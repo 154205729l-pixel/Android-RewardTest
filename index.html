@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <title>ToBid 激励视频 H5 测试</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9dee8;
+      --primary: #1769e0;
+      --primary-pressed: #1054b8;
+      --ok: #13795b;
+      --warn: #9a5b00;
+      --bad: #b42318;
+      --mono: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(720px, 100%);
+      margin: 0 auto;
+      padding: 20px 14px 32px;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel {
+      margin-top: 14px;
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .status {
+      display: grid;
+      grid-template-columns: 10px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcff;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--warn);
+    }
+
+    .status.ready .dot {
+      background: var(--ok);
+    }
+
+    .status.error .dot {
+      background: var(--bad);
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 82px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: var(--mono);
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(23, 105, 224, .12);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+
+    button:active {
+      background: var(--primary-pressed);
+    }
+
+    button.secondary {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+    }
+
+    button.secondary:active {
+      background: #eef2f8;
+    }
+
+    button.warn {
+      background: #8a4b0f;
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .log {
+      height: 260px;
+      overflow: auto;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0f172a;
+      color: #dbe7ff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (min-width: 620px) {
+      .buttons {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>ToBid 激励视频 H5 测试</h1>
+    <p class="sub">复用旧页面的 adRequest / preLoadVideo / connectVideo 调用。</p>
+
+    <section class="panel">
+      <div id="bridgeStatus" class="status">
+        <span class="dot"></span>
+        <span id="bridgeText">正在检测 WebViewJavascriptBridge</span>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label for="pgid">广告配置 pgid</label>
+          <select id="pgid">
+            <option value="1.15.2">1.15.2 - 普通用户</option>
+            <option value="8.15.2">8.15.2 - VIP 用户</option>
+          </select>
+        </div>
+        <div>
+          <label for="sceneId">展示场景 id</label>
+          <input id="sceneId" value="leagueCollect_14">
+        </div>
+      </div>
+
+      <label for="adUrl">广告配置接口</label>
+      <input id="adUrl" value="https://ap.dongqiudi.com/plat/v3">
+
+      <div class="grid">
+        <div>
+          <label for="origin">origin</label>
+          <input id="origin" value="tobid" placeholder="自动获取或手动填写">
+        </div>
+        <div>
+          <label for="sdkId">sdk_id / 疑似 placementId</label>
+          <input id="sdkId" value="6362731749334746" placeholder="自动获取或手动填写">
+        </div>
+      </div>
+
+      <label for="extraData">展示时附加 data，JSON，可留空</label>
+      <textarea id="extraData" placeholder='例如 {"user_id":"test_user_001"}'></textarea>
+
+      <div class="buttons">
+        <button id="detectBtn" class="secondary">检测桥接</button>
+        <button id="requestBtn">自动获取并预加载</button>
+        <button id="manualPreloadBtn" class="secondary">手动 sdk_id 预加载</button>
+        <button id="showBtn" class="warn">展示激励视频</button>
+      </div>
+
+      <p class="hint">如果自动获取返回空，先抓包确认 ad_source.sdk_position_id，再填到 sdk_id 里点“手动 sdk_id 预加载”。</p>
+    </section>
+
+    <section class="panel">
+      <label>运行日志</label>
+      <div id="log" class="log"></div>
+      <div class="buttons">
+        <button id="copyBtn" class="secondary">复制日志</button>
+        <button id="clearBtn" class="secondary">清空日志</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var currentAdPayload = null;
+      var bridgeDetected = false;
+
+      function $(id) {
+        return document.getElementById(id);
+      }
+
+      function now() {
+        var d = new Date();
+        return [
+          pad(d.getHours()),
+          pad(d.getMinutes()),
+          pad(d.getSeconds())
+        ].join(":");
+      }
+
+      function pad(n) {
+        return n < 10 ? "0" + n : String(n);
+      }
+
+      function safeJson(value) {
+        try {
+          return JSON.stringify(value, null, 2);
+        } catch (e) {
+          return String(value);
+        }
+      }
+
+      function log(title, data) {
+        var line = "[" + now() + "] " + title;
+        if (typeof data !== "undefined") {
+          line += "\n" + safeJson(data);
+        }
+        $("log").textContent = line + "\n\n" + $("log").textContent;
+        console.log(title, data);
+      }
+
+      function setStatus(type, text) {
+        var box = $("bridgeStatus");
+        box.className = "status" + (type ? " " + type : "");
+        $("bridgeText").textContent = text;
+      }
+
+      function getQuery() {
+        var result = {};
+        var search = window.location.search.replace(/^\?/, "");
+        if (!search) return result;
+        search.split("&").forEach(function (part) {
+          var pair = part.split("=");
+          var key = decodeURIComponent(pair[0] || "");
+          var value = decodeURIComponent(pair.slice(1).join("=") || "");
+          if (key) result[key] = value;
+        });
+        return result;
+      }
+
+      function applyQueryDefaults() {
+        var q = getQuery();
+        if (q.pgid) $("pgid").value = q.pgid;
+        if (q.scene_id) $("sceneId").value = q.scene_id;
+        if (q.id) $("sceneId").value = q.id;
+        if (q.ad_url) $("adUrl").value = q.ad_url;
+        if (q.origin) $("origin").value = q.origin;
+        if (q.sdk_id) $("sdkId").value = q.sdk_id;
+        if (q.data) $("extraData").value = q.data;
+      }
+
+      window.connectWebViewJavascriptBridge = window.connectWebViewJavascriptBridge || function (callback) {
+        if (window.WebViewJavascriptBridge) {
+          if (!window.WebViewJavascriptBridge._messageHandler && window.WebViewJavascriptBridge.init) {
+            window.WebViewJavascriptBridge.init(function () {});
+          }
+          callback(window.WebViewJavascriptBridge);
+          return;
+        }
+
+        document.addEventListener("WebViewJavascriptBridgeReady", function () {
+          if (window.WebViewJavascriptBridge && !window.WebViewJavascriptBridge._messageHandler && window.WebViewJavascriptBridge.init) {
+            window.WebViewJavascriptBridge.init(function () {});
+          }
+          callback(window.WebViewJavascriptBridge);
+        }, false);
+
+        if (window.WVJBCallbacks) {
+          window.WVJBCallbacks.push(callback);
+          return;
+        }
+
+        window.WVJBCallbacks = [callback];
+        var iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = "https://__bridge_loaded__";
+        document.documentElement.appendChild(iframe);
+        setTimeout(function () {
+          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+        }, 0);
+      };
+
+      function getBridge(timeout) {
+        timeout = timeout || 5000;
+        return new Promise(function (resolve, reject) {
+          var done = false;
+          var timer = setTimeout(function () {
+            if (done) return;
+            done = true;
+            reject(new Error("未检测到 WebViewJavascriptBridge"));
+          }, timeout);
+
+          window.connectWebViewJavascriptBridge(function (bridge) {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            if (bridge && bridge.callHandler) {
+              bridgeDetected = true;
+              resolve(bridge);
+            } else {
+              reject(new Error("桥对象存在，但没有 callHandler 方法"));
+            }
+          });
+        });
+      }
+
+      function callHandler(name, params) {
+        log("callHandler: " + name, params);
+        return getBridge().then(function (bridge) {
+          return new Promise(function (resolve) {
+            var settled = false;
+            var timer = setTimeout(function () {
+              if (settled) return;
+              settled = true;
+              log(name + " 回调超时，可能是原生方法无返回值");
+              resolve(null);
+            }, 8000);
+
+            bridge.callHandler(name, params || {}, function (response) {
+              if (settled) return;
+              settled = true;
+              clearTimeout(timer);
+              log(name + " callback", response);
+              resolve(response);
+            });
+          });
+        });
+      }
+
+      function unwrapNativeResponse(response) {
+        var body = response && response._responseWrapedByNative ? response._responseWrapedByNative : response;
+        if (typeof body === "string") {
+          try {
+            return JSON.parse(body);
+          } catch (e) {
+            return body;
+          }
+        }
+        return body;
+      }
+
+      function findRewardAd(body) {
+        var data = body;
+        if (body && Array.isArray(body.data)) data = body.data;
+        if (!Array.isArray(data)) return null;
+        for (var i = 0; i < data.length; i += 1) {
+          if (data[i] && data[i].ad_type === "sdk_rewarded_video") {
+            return data[i];
+          }
+        }
+        return null;
+      }
+
+      function buildPayloadFromInputs() {
+        var sdkId = $("sdkId").value.trim();
+        if (!sdkId) {
+          throw new Error("请先填写 sdk_id，或先点自动获取并预加载");
+        }
+        return {
+          origin: $("origin").value.trim(),
+          sdk_id: sdkId,
+          imp_mon_arr: [],
+          click_mon_arr: [],
+          ct: "",
+          pgid: $("pgid").value
+        };
+      }
+
+      function preload(payload) {
+        currentAdPayload = payload;
+        $("origin").value = payload.origin || "";
+        $("sdkId").value = payload.sdk_id || "";
+        log("preLoadVideo payload", payload);
+        return callHandler("preLoadVideo", payload);
+      }
+
+      function parseExtraData() {
+        var raw = $("extraData").value.trim();
+        if (!raw) return {};
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          throw new Error("附加 data 不是合法 JSON");
+        }
+      }
+
+      function detectBridge() {
+        setStatus("", "正在检测 WebViewJavascriptBridge");
+        return getBridge(3000).then(function () {
+          setStatus("ready", "已检测到 WebViewJavascriptBridge");
+          log("bridge ready", {
+            userAgent: navigator.userAgent,
+            url: location.href
+          });
+        }).catch(function (error) {
+          bridgeDetected = false;
+          setStatus("error", error.message);
+          log("bridge error", {
+            message: error.message,
+            userAgent: navigator.userAgent
+          });
+        });
+      }
+
+      function requestAndPreload() {
+        var pgid = $("pgid").value;
+        var adUrl = $("adUrl").value.trim();
+        return callHandler("adRequest", {
+          method: "get",
+          url: adUrl,
+          param: {
+            pgid: pgid
+          }
+        }).then(function (response) {
+          var body = unwrapNativeResponse(response);
+          log("adRequest unwrapped", body);
+          var ad = findRewardAd(body);
+          if (!ad) {
+            throw new Error("adRequest 没找到 ad_type=sdk_rewarded_video 的广告");
+          }
+
+          var payload = {
+            origin: ad.ad_source && ad.ad_source.sdk_origin,
+            sdk_id: ad.ad_source && ad.ad_source.sdk_position_id,
+            imp_mon_arr: ad.imp_mon_arr || [],
+            click_mon_arr: ad.click_mon_arr || [],
+            ct: "",
+            pgid: pgid
+          };
+
+          if (!payload.sdk_id) {
+            throw new Error("广告配置里没有 ad_source.sdk_position_id");
+          }
+
+          return preload(payload);
+        }).catch(function (error) {
+          log("自动获取并预加载失败", { message: error.message });
+          alert(error.message);
+        });
+      }
+
+      function manualPreload() {
+        try {
+          return preload(buildPayloadFromInputs()).catch(function (error) {
+            log("手动预加载失败", { message: error.message });
+            alert(error.message);
+          });
+        } catch (error) {
+          log("手动预加载失败", { message: error.message });
+          alert(error.message);
+        }
+      }
+
+      function showRewardVideo() {
+        try {
+          var base = currentAdPayload || buildPayloadFromInputs();
+          var payload = Object.assign({
+            id: $("sceneId").value.trim() || "leagueCollect_14",
+            data: parseExtraData()
+          }, base);
+          return callHandler("connectVideo", payload).catch(function (error) {
+            log("展示失败", { message: error.message });
+            alert(error.message);
+          });
+        } catch (error) {
+          log("展示失败", { message: error.message });
+          alert(error.message);
+        }
+      }
+
+      function copyLog() {
+        var text = $("log").textContent;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            log("日志已复制");
+          }).catch(function () {
+            log("复制失败，请手动长按复制");
+          });
+        } else {
+          log("当前 WebView 不支持自动复制，请手动长按复制");
+        }
+      }
+
+      function bindEvents() {
+        $("detectBtn").addEventListener("click", detectBridge);
+        $("requestBtn").addEventListener("click", requestAndPreload);
+        $("manualPreloadBtn").addEventListener("click", manualPreload);
+        $("showBtn").addEventListener("click", showRewardVideo);
+        $("copyBtn").addEventListener("click", copyLog);
+        $("clearBtn").addEventListener("click", function () {
+          $("log").textContent = "";
+        });
+      }
+
+      function init() {
+        applyQueryDefaults();
+        bindEvents();
+        log("page loaded", {
+          userAgent: navigator.userAgent,
+          bridgeGlobalExists: !!window.WebViewJavascriptBridge
+        });
+        detectBridge().then(function () {
+          var q = getQuery();
+          if (q.auto_load === "1") {
+            if (q.sdk_id) {
+              manualPreload();
+            } else {
+              requestAndPreload();
+            }
+          }
+          if (q.auto_show === "1") {
+            setTimeout(showRewardVideo, 2500);
+          }
+        });
+
+        setTimeout(function () {
+          if (!bridgeDetected) {
+            log("提示", "如果在 App 里打开仍检测不到桥，需要客户端把 WebViewJavascriptBridge 注入到这个页面。");
+          }
+        }, 3500);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
