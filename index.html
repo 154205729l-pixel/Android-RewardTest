@@ -853,7 +853,7 @@ body::after {
     <div class="gate-preview-row"></div>
   </div>
   <button class="btn-unlock" id="rewardUnlockBtn" onclick="showRewardAd(unlockResult)">
-    看激励视频解锁报告
+    查看激励视频解锁报告
     <span class="btn-unlock-sub" id="rewardUnlockSub">播放完毕后即可查看完整报告</span>
   </button>
 </div>
@@ -1290,6 +1290,12 @@ var currentQ = 0;
 var rewardAd = null;
 var rewardAdInited = false;
 var rewardAdLoading = false;
+var rewardAdSessionId = 0;
+var rewardAdUnlockTimer = null;
+var rewardAdLaunchFallbackTimer = null;
+var rewardAdWatchStartedAt = 0;
+var rewardAdWatchDelay = 8000;
+var rewardAdPendingCallback = null;
 var rewardAdLogPrefix = '[mental-health-reward]';
 
 // ===== 屏幕切换 =====
@@ -1447,7 +1453,7 @@ function initRewardAd() {
     sdkId: '6362731749334746',
     sceneId: 'leagueCollect_14',
     pgid: '1.15.2',
-    callbackTimeout: 180000,
+    callbackTimeout: 8000,
     data: {
       from: 'mental-health-test',
       reward: 'view_result'
@@ -1460,7 +1466,7 @@ function initRewardAd() {
       logRewardAd('bridge detect failed', { message: error.message });
       return;
     }
-    preloadRewardAd(true);
+    logRewardAd('bridge detected');
   });
 
   return true;
@@ -1483,68 +1489,152 @@ function setUnlockButtonLoading(loading) {
   var sub = document.getElementById('rewardUnlockSub');
   if (!btn || !sub) return;
   btn.disabled = loading;
-  btn.firstChild.nodeValue = loading ? '正在打开激励视频' : '看激励视频解锁报告';
-  sub.textContent = loading ? '请稍候，不要重复点击' : '播放完毕后即可查看完整报告';
+  btn.firstChild.nodeValue = loading ? '正在打开激励视频' : '查看激励视频解锁报告';
+  sub.textContent = loading ? '进入广告后 8 秒自动解锁' : '播放完毕后即可查看完整报告';
 }
 
 function showRewardAdOverlay(title, desc) {
   document.getElementById('adTitle').textContent = title;
   document.getElementById('adDesc').innerHTML = desc;
-  document.getElementById('adTimer').textContent = '等待 App 返回观看完成状态';
+  document.getElementById('adTimer').textContent = '进入广告后 8 秒自动解锁';
   document.getElementById('adProgressBar').style.width = '100%';
   document.getElementById('adCloseBtn').style.display = 'inline-block';
   document.getElementById('adOverlay').classList.remove('hidden');
 }
 
-function hideRewardAdOverlay() {
+function clearRewardAdTimers() {
+  if (rewardAdUnlockTimer) {
+    clearTimeout(rewardAdUnlockTimer);
+    rewardAdUnlockTimer = null;
+  }
+  if (rewardAdLaunchFallbackTimer) {
+    clearTimeout(rewardAdLaunchFallbackTimer);
+    rewardAdLaunchFallbackTimer = null;
+  }
+}
+
+function resetRewardAdWaiting(message) {
+  rewardAdSessionId++;
+  rewardAdLoading = false;
+  rewardAdWatchStartedAt = 0;
+  rewardAdPendingCallback = null;
+  clearRewardAdTimers();
   document.getElementById('adOverlay').classList.add('hidden');
   setUnlockButtonLoading(false);
+  if (message) showToast(message);
+  setTimeout(function(){ preloadRewardAd(true); }, 500);
+}
+
+function hideRewardAdOverlay() {
+  resetRewardAdWaiting('已取消等待，可重新点击观看');
+}
+
+function completeRewardAdUnlock(sessionId, reason, response) {
+  var callback;
+  if (sessionId !== rewardAdSessionId || !rewardAdLoading) return;
+
+  callback = rewardAdPendingCallback;
+  rewardAdLoading = false;
+  rewardAdWatchStartedAt = 0;
+  rewardAdPendingCallback = null;
+  clearRewardAdTimers();
+  document.getElementById('adOverlay').classList.add('hidden');
+  setUnlockButtonLoading(false);
+  logRewardAd('unlock result', { reason: reason, response: response || null });
+  showToast('广告观看完成，正在打开报告');
+
+  if (typeof callback === 'function') callback();
+  setTimeout(function(){ preloadRewardAd(true); }, 800);
+}
+
+function startRewardAdUnlockTimer(sessionId, reason) {
+  if (sessionId !== rewardAdSessionId || !rewardAdLoading || rewardAdUnlockTimer) return;
+
+  rewardAdWatchStartedAt = Date.now();
+  document.getElementById('adTitle').textContent = '激励视频播放中';
+  document.getElementById('adDesc').innerHTML = '请观看激励视频，8 秒后自动打开报告';
+  document.getElementById('adTimer').textContent = '8 秒后自动解锁报告';
+  logRewardAd('start 8s unlock timer', { reason: reason });
+
+  rewardAdUnlockTimer = setTimeout(function() {
+    completeRewardAdUnlock(sessionId, reason || '8s auto unlock');
+  }, rewardAdWatchDelay);
+}
+
+function handleRewardAdPageLeave() {
+  if (!rewardAdLoading) return;
+  startRewardAdUnlockTimer(rewardAdSessionId, 'page leave');
+}
+
+function handleRewardAdPageReturn() {
+  if (!rewardAdLoading || !rewardAdWatchStartedAt) return;
+  if (Date.now() - rewardAdWatchStartedAt < rewardAdWatchDelay) {
+    logRewardAd('return before 8s, reset reward state');
+    resetRewardAdWaiting('广告未观看满 8 秒，请重新观看');
+  }
 }
 
 function showRewardAd(callback) {
+  var sessionId;
   if (rewardAdLoading) return;
   if (!rewardAd && !initRewardAd()) return;
 
+  clearRewardAdTimers();
+  rewardAdSessionId++;
+  sessionId = rewardAdSessionId;
+  rewardAdPendingCallback = callback;
+  rewardAdWatchStartedAt = 0;
   rewardAdLoading = true;
   setUnlockButtonLoading(true);
-  showRewardAdOverlay('正在拉起激励视频', '请稍候，播放完成后将自动查看报告');
+  showRewardAdOverlay('正在拉起激励视频', '请稍候，进入广告后观看 8 秒即可查看报告');
 
   preloadRewardAd(true);
 
   setTimeout(function() {
+    if (sessionId !== rewardAdSessionId || !rewardAdLoading) return;
+
     rewardAd.show({
       data: {
         from: 'mental-health-test',
         reward: 'view_result'
       }
     }, function(error, response, meta) {
-      rewardAdLoading = false;
-      setUnlockButtonLoading(false);
+      if (sessionId !== rewardAdSessionId || !rewardAdLoading) return;
 
       if (error) {
-        hideRewardAdOverlay();
         logRewardAd('show failed', { message: error.message });
+        resetRewardAdWaiting();
         showToast('激励视频展示失败，请稍后再试');
         return;
       }
 
       if (meta && meta.timeout) {
-        document.getElementById('adTitle').textContent = '未收到完成回调';
-        document.getElementById('adDesc').innerHTML = '如果广告没有弹出，请返回重试<br>如果广告已播放完但未解锁，需要客户端确认 connectVideo 回调';
-        document.getElementById('adTimer').textContent = '本次未自动解锁报告';
-        logRewardAd('show callback timeout');
-        showToast('未收到广告完成回调');
+        logRewardAd('show callback timeout, unlock by 8s fallback');
+        completeRewardAdUnlock(sessionId, 'connectVideo 8s timeout', response);
         return;
       }
 
-      hideRewardAdOverlay();
-      logRewardAd('show completed', response);
-      showToast('广告播放完成，正在打开报告');
-      if (typeof callback === 'function') callback();
-      setTimeout(function(){ preloadRewardAd(true); }, 800);
+      logRewardAd('connectVideo callback received', response);
+      startRewardAdUnlockTimer(sessionId, 'connectVideo callback');
     });
+
+    rewardAdLaunchFallbackTimer = setTimeout(function() {
+      startRewardAdUnlockTimer(sessionId, 'launch fallback');
+    }, 1200);
   }, 900);
 }
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    handleRewardAdPageLeave();
+  } else {
+    handleRewardAdPageReturn();
+  }
+});
+window.addEventListener('pagehide', handleRewardAdPageLeave);
+window.addEventListener('pageshow', handleRewardAdPageReturn);
+window.addEventListener('blur', handleRewardAdPageLeave);
+window.addEventListener('focus', handleRewardAdPageReturn);
 
 function unlockResult() {
   showScreen('resultScreen');
@@ -1973,7 +2063,7 @@ function closeShareOverlay() {
 }
 
 
-initRewardAd();
+preloadRewardAd(true);
 
 </script>
 </body>
