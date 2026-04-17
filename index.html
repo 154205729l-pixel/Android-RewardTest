@@ -1,614 +1,1980 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="format-detection" content="telephone=no">
-  <title>ToBid 激励视频 H5 测试</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --bg: #f7f8fb;
-      --panel: #ffffff;
-      --text: #172033;
-      --muted: #667085;
-      --line: #d9dee8;
-      --primary: #1769e0;
-      --primary-pressed: #1054b8;
-      --ok: #13795b;
-      --warn: #9a5b00;
-      --bad: #b42318;
-      --mono: #0f172a;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>心理健康测试</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background: linear-gradient(160deg, #0a1628 0%, #0d2137 30%, #0a1a2e 60%, #0a1628 100%);
+  min-height: 100vh;
+  color: #fff;
+  overflow-x: hidden;
+}
+.container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 0 16px;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+/* ===== 背景光斑 ===== */
+body::before {
+  content: '';
+  position: fixed;
+  top: -20%; left: -20%;
+  width: 60vw; height: 60vw;
+  background: radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBlob1 12s ease-in-out infinite;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -10%; right: -20%;
+  width: 50vw; height: 50vw;
+  background: radial-gradient(circle, rgba(129,140,248,0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBlob2 15s ease-in-out infinite;
+}
+@keyframes floatBlob1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(10vw, 8vh); }
+}
+@keyframes floatBlob2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-8vw, -6vh); }
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 15px;
-      line-height: 1.5;
-    }
+/* ===== 屏幕切换 ===== */
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; }
 
-    main {
-      width: min(720px, 100%);
-      margin: 0 auto;
-      padding: 20px 14px 32px;
-    }
+/* ===== 欢迎页 ===== */
+#welcomeScreen {
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+.app-icon {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
+  position: relative;
+  animation: pulse 3s ease-in-out infinite;
+}
+.app-icon svg.heart-svg {
+  width: 64px;
+  height: 64px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 16px rgba(236,72,153,0.5)) drop-shadow(0 0 40px rgba(236,72,153,0.2));
+}
+.app-icon .heart-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, rgba(236,72,153,0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: heartGlow 2s ease-in-out infinite alternate;
+}
+.app-icon .heart-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 96px;
+  height: 96px;
+  border: 1.5px solid rgba(236,72,153,0.2);
+  border-radius: 50%;
+}
+.app-icon .heart-ring2 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110px;
+  height: 110px;
+  border: 1px dashed rgba(74,222,128,0.15);
+  border-radius: 50%;
+  animation: spinSlow 20s linear infinite;
+}
+.app-icon .heart-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74,222,128,0.6);
+}
+.app-icon .heart-dot:nth-child(5) { top: 2px; left: 50%; }
+.app-icon .heart-dot:nth-child(6) { bottom: 8px; right: 8px; background: #22d3ee; box-shadow: 0 0 8px rgba(34,211,238,0.6); }
+.app-icon .heart-dot:nth-child(7) { top: 40%; left: 2px; background: #818cf8; box-shadow: 0 0 8px rgba(129,140,248,0.6); }
+@keyframes heartGlow {
+  from { opacity: 0.6; transform: translate(-50%, -50%) scale(0.9); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+@keyframes spinSlow {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.app-title {
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: 6px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #4ade80, #22d3ee, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.app-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 36px;
+  letter-spacing: 2px;
+}
+.card {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 20px;
+  border: 1px solid rgba(74,222,128,0.12);
+  padding: 28px 24px;
+  box-shadow: 0 8px 32px rgba(10,50,80,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.welcome-info {
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 24px;
+  text-align: center;
+}
+.welcome-tags {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.welcome-tag {
+  font-size: 12px;
+  color: rgba(74,222,128,0.8);
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #4ade80, #22d3ee, #818cf8);
+  background-size: 200% 200%;
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 3px;
+  transition: opacity 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(34,211,238,0.3);
+}
+.btn-primary:active { opacity: 0.85; }
 
-    h1 {
-      margin: 0 0 4px;
-      font-size: 22px;
-      line-height: 1.25;
-      letter-spacing: 0;
-    }
+/* ===== 答题页 ===== */
+#questionScreen {
+  min-height: 100vh;
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+.progress-wrap {
+  width: 100%;
+  margin-bottom: 8px;
+}
+.progress-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.progress-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+.progress-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(74,222,128,0.8);
+}
+.progress-bar-bg {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22d3ee);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.section-label {
+  font-size: 12px;
+  color: rgba(34,211,238,0.7);
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.question-card {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 20px;
+  border: 1px solid rgba(74,222,128,0.1);
+  padding: 28px 20px;
+  box-shadow: 0 8px 32px rgba(10,50,80,0.15);
+  animation: fadeInUp 0.35s ease both;
+}
+.question-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 24px;
+  text-align: center;
+}
+.question-hint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  margin-bottom: 16px;
+}
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.option-btn {
+  width: 100%;
+  padding: 13px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+.option-btn:active { transform: scale(0.98); }
+.option-btn.selected {
+  background: rgba(74,222,128,0.1);
+  border-color: rgba(74,222,128,0.4);
+  color: #4ade80;
+}
+.nav-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+.btn-back {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.3);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 8px 16px;
+}
+.btn-back:active { color: rgba(255,255,255,0.6); }
 
-    p {
-      margin: 0;
-    }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-    .sub {
-      color: var(--muted);
-      font-size: 13px;
-    }
+/* ===== 广告过渡页 ===== */
+#adGateScreen {
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 40px 0;
+}
+.gate-icon {
+  font-size: 72px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 20px rgba(34,211,238,0.4));
+  animation: pulse 3s ease-in-out infinite;
+}
+.gate-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #4ade80, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.gate-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 32px;
+  text-align: center;
+  line-height: 1.6;
+}
+.gate-preview {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(74,222,128,0.08);
+  padding: 20px;
+  margin-bottom: 28px;
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+}
+.gate-preview-row {
+  height: 12px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.gate-preview-row:last-child { width: 60%; margin-bottom: 0; }
+.btn-unlock {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #4ade80, #22d3ee);
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 24px rgba(74,222,128,0.25);
+  transition: opacity 0.2s;
+}
+.btn-unlock:active { opacity: 0.85; }
+.btn-unlock:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.btn-unlock-sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-top: 4px;
+}
 
-    .panel {
-      margin-top: 14px;
-      padding: 14px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-    }
+/* ===== 广告弹窗 ===== */
+.ad-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.ad-overlay.hidden { display: none; }
+.ad-box {
+  width: 300px;
+  background: linear-gradient(160deg, #0d2137, #0a1a2e);
+  border-radius: 20px;
+  border: 1px solid rgba(74,222,128,0.2);
+  padding: 32px 24px 24px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 16px 48px rgba(10,50,80,0.4);
+}
+.ad-badge {
+  position: absolute;
+  top: 12px; left: 12px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+.ad-icon { font-size: 48px; margin-bottom: 12px; filter: drop-shadow(0 0 12px rgba(74,222,128,0.5)); }
+.ad-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #4ade80, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.ad-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.ad-progress-wrap {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.ad-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #4ade80, #22d3ee);
+  border-radius: 2px;
+  transition: width 1s linear;
+}
+.ad-timer {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 8px;
+}
+.ad-close-btn {
+  background: rgba(74,222,128,0.12);
+  border: 1px solid rgba(74,222,128,0.2);
+  color: #fff;
+  padding: 10px 32px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+}
+.ad-close-btn:active { background: rgba(74,222,128,0.25); }
 
-    .status {
-      display: grid;
-      grid-template-columns: 10px 1fr;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fbfcff;
-      font-weight: 600;
-    }
+/* ===== 结果页 ===== */
+#resultScreen {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+.result-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.result-title {
+  font-size: 20px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #4ade80, #22d3ee, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.result-date {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+}
 
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--warn);
-    }
+/* 环形分数 */
+.score-ring-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.score-ring {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+.score-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.score-ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.06);
+  stroke-width: 10;
+}
+.score-ring-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s ease;
+}
+.score-ring-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.score-ring-num {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+}
+.score-ring-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 4px;
+}
 
-    .status.ready .dot {
-      background: var(--ok);
-    }
+/* 维度条 */
+.dim-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(74,222,128,0.08);
+  border-radius: 14px;
+  padding: 18px 16px;
+  margin-bottom: 12px;
+  animation: fadeInUp 0.4s ease both;
+}
+.dim-card:nth-child(2) { animation-delay: 0.08s; }
+.dim-card:nth-child(3) { animation-delay: 0.16s; }
+.dim-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.dim-row:last-child { margin-bottom: 0; }
+.dim-label {
+  width: 70px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+}
+.dim-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 10px;
+}
+.dim-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+.dim-val {
+  width: 36px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  flex-shrink: 0;
+}
+.dim-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-    .status.error .dot {
-      background: var(--bad);
-    }
+/* 详细分析卡片 */
+.deep-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(74,222,128,0.08);
+  border-radius: 14px;
+  padding: 18px 16px;
+  margin-bottom: 12px;
+  animation: fadeInUp 0.4s ease both;
+}
+.deep-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.deep-card-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 0 6px rgba(74,222,128,0.4));
+}
+.deep-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #4ade80, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.deep-card-badge {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.deep-card-text {
+  font-size: 13px;
+  line-height: 1.9;
+  color: rgba(220,230,255,0.6);
+}
 
-    label {
-      display: block;
-      margin: 12px 0 6px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
-    }
+/* 建议卡片 */
+.rec-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.rec-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(74,222,128,0.08);
+  border-radius: 12px;
+  padding: 14px;
+}
+.rec-icon { font-size: 24px; flex-shrink: 0; }
+.rec-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(220,230,255,0.6);
+}
+.rec-text strong {
+  color: rgba(255,255,255,0.8);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 2px;
+}
 
-    input,
-    textarea,
-    select {
-      width: 100%;
-      min-height: 42px;
-      padding: 9px 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--text);
-      font: inherit;
-      outline: none;
-    }
+/* 危机提示 */
+.crisis-card {
+  background: rgba(248,113,113,0.08);
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.crisis-card .crisis-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f87171;
+  margin-bottom: 8px;
+}
+.crisis-card .crisis-text {
+  font-size: 12px;
+  line-height: 1.7;
+  color: rgba(248,113,113,0.7);
+}
+.crisis-card .crisis-phone {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f87171;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
 
-    textarea {
-      min-height: 82px;
-      resize: vertical;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 12px;
-      color: var(--mono);
-    }
+/* 免责声明 */
+.disclaimer {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+  line-height: 1.6;
+  margin: 16px 0;
+  padding: 0 8px;
+}
 
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(23, 105, 224, .12);
-    }
+/* 底部按钮 */
+.bottom-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.bottom-btns .btn-primary { flex: 1; font-size: 14px; padding: 12px; letter-spacing: 1px; }
+.btn-secondary {
+  flex: 1;
+  padding: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.btn-secondary:active { background: rgba(255,255,255,0.1); }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+/* toast */
+.toast {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 13px;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 2000;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .buttons {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    button {
-      min-height: 46px;
-      border: 0;
-      border-radius: 8px;
-      background: var(--primary);
-      color: #fff;
-      font: inherit;
-      font-weight: 700;
-      letter-spacing: 0;
-      cursor: pointer;
-    }
-
-    button:active {
-      background: var(--primary-pressed);
-    }
-
-    button.secondary {
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--text);
-    }
-
-    button.secondary:active {
-      background: #eef2f8;
-    }
-
-    button.warn {
-      background: #8a4b0f;
-    }
-
-    .hint {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .log {
-      height: 260px;
-      overflow: auto;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #0f172a;
-      color: #dbe7ff;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 12px;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    @media (min-width: 620px) {
-      .buttons {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+/* 分享长图预览 */
+.share-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.share-overlay.hidden { display: none; }
+.share-tip {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin: 12px 0 8px;
+  text-align: center;
+}
+.share-img-wrap {
+  flex: 1;
+  width: 100%;
+  max-width: 375px;
+  padding: 12px 16px;
+  overflow-y: auto;
+}
+.share-img-wrap img {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.share-btns {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px 24px;
+  width: 100%;
+  max-width: 375px;
+}
+.share-btns button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  letter-spacing: 1px;
+}
+.btn-save {
+  background: linear-gradient(135deg, #4ade80, #22d3ee);
+  color: #fff;
+}
+.btn-close-share {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.15) !important;
+}
+</style>
 </head>
 <body>
-  <main>
-    <h1>ToBid 激励视频 H5 测试</h1>
-    <p class="sub">复用旧页面的 adRequest / preLoadVideo / connectVideo 调用。</p>
+<div class="container">
 
-    <section class="panel">
-      <div id="bridgeStatus" class="status">
-        <span class="dot"></span>
-        <span id="bridgeText">正在检测 WebViewJavascriptBridge</span>
-      </div>
+<!-- 欢迎页 -->
+<div id="welcomeScreen" class="screen active">
+  <div class="app-icon">
+    <div class="heart-glow"></div>
+    <svg class="heart-svg" viewBox="0 0 24 24" fill="none">
+      <defs>
+        <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f9a8d4"/>
+          <stop offset="50%" stop-color="#ec4899"/>
+          <stop offset="100%" stop-color="#db2777"/>
+        </linearGradient>
+      </defs>
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#hg)"/>
+    </svg>
+    <div class="heart-ring"></div>
+    <div class="heart-dot"></div>
+    <div class="heart-dot"></div>
+    <div class="heart-dot"></div>
+    <div class="heart-ring2"></div>
+  </div>
+  <div class="app-title">心理健康测试</div>
+  <div class="app-subtitle">了解你的内心世界</div>
+  <div class="card">
+    <div class="welcome-info">
+      本测试基于国际通用的心理健康筛查量表，包含情绪健康、焦虑评估和压力感知三个维度，共20道题目，约需3分钟完成。
+    </div>
+    <div class="welcome-tags">
+      <span class="welcome-tag">PHQ-9 抑郁筛查</span>
+      <span class="welcome-tag">GAD-7 焦虑评估</span>
+      <span class="welcome-tag">PSS-4 压力感知</span>
+    </div>
+    <button class="btn-primary" onclick="startTest()">开始测试</button>
+  </div>
+</div>
 
-      <div class="grid">
-        <div>
-          <label for="pgid">广告配置 pgid</label>
-          <select id="pgid">
-            <option value="1.15.2">1.15.2 - 普通用户</option>
-            <option value="8.15.2">8.15.2 - VIP 用户</option>
-          </select>
-        </div>
-        <div>
-          <label for="sceneId">展示场景 id</label>
-          <input id="sceneId" value="leagueCollect_14">
-        </div>
-      </div>
+<!-- 答题页 -->
+<div id="questionScreen" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label" id="sectionLabel">情绪健康</span>
+      <span class="progress-num" id="progressNum">1/20</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar" style="width:5%"></div>
+    </div>
+  </div>
+  <div id="questionArea"></div>
+  <div class="nav-row">
+    <button class="btn-back" id="btnBack" onclick="prevQuestion()">← 上一题</button>
+  </div>
+</div>
 
-      <label for="adUrl">广告配置接口</label>
-      <input id="adUrl" value="https://ap.dongqiudi.com/plat/v3">
+<!-- 广告过渡页 -->
+<div id="adGateScreen" class="screen">
+  <div class="gate-icon">📊</div>
+  <div class="gate-title">测试完成</div>
+  <div class="gate-desc">你的心理健康报告已生成<br>包含情绪、焦虑、压力三维度详细分析</div>
+  <div class="gate-preview">
+    <div class="gate-preview-row"></div>
+    <div class="gate-preview-row"></div>
+    <div class="gate-preview-row"></div>
+    <div class="gate-preview-row"></div>
+    <div class="gate-preview-row"></div>
+  </div>
+  <button class="btn-unlock" id="rewardUnlockBtn" onclick="showRewardAd(unlockResult)">
+    看激励视频解锁报告
+    <span class="btn-unlock-sub" id="rewardUnlockSub">播放完毕后即可查看完整报告</span>
+  </button>
+</div>
 
-      <div class="grid">
-        <div>
-          <label for="origin">origin</label>
-          <input id="origin" value="tobid" placeholder="自动获取或手动填写">
-        </div>
-        <div>
-          <label for="sdkId">sdk_id / 疑似 placementId</label>
-          <input id="sdkId" value="6362731749334746" placeholder="自动获取或手动填写">
-        </div>
-      </div>
+<!-- 结果页 -->
+<div id="resultScreen" class="screen"></div>
 
-      <label for="extraData">展示时附加 data，JSON，可留空</label>
-      <textarea id="extraData" placeholder='例如 {"user_id":"test_user_001"}'></textarea>
+</div>
 
-      <div class="buttons">
-        <button id="detectBtn" class="secondary">检测桥接</button>
-        <button id="requestBtn">自动获取并预加载</button>
-        <button id="manualPreloadBtn" class="secondary">手动 sdk_id 预加载</button>
-        <button id="showBtn" class="warn">展示激励视频</button>
-      </div>
+<!-- 广告弹窗 -->
+<div id="adOverlay" class="ad-overlay hidden">
+  <div class="ad-box">
+    <div class="ad-badge">激励视频</div>
+    <div class="ad-icon">💚</div>
+    <div class="ad-title" id="adTitle">正在拉起激励视频</div>
+    <div class="ad-desc" id="adDesc">请稍候，播放完成后将自动查看报告</div>
+    <div class="ad-progress-wrap"><div class="ad-progress-bar" id="adProgressBar"></div></div>
+    <div class="ad-timer" id="adTimer">等待 App 返回观看完成状态</div>
+    <button class="ad-close-btn" id="adCloseBtn" style="display:none" onclick="hideRewardAdOverlay()">取消等待</button>
+  </div>
+</div>
 
-      <p class="hint">如果自动获取返回空，先抓包确认 ad_source.sdk_position_id，再填到 sdk_id 里点“手动 sdk_id 预加载”。</p>
-    </section>
+<!-- 分享长图预览 -->
+<div id="shareOverlay" class="share-overlay hidden">
+  <div class="share-tip">长按图片保存或分享</div>
+  <div class="share-img-wrap"><img id="shareImg" src="" alt="分享图"></div>
+  <div class="share-btns">
+    <button class="btn-save" onclick="saveShareImage()">保存图片</button>
+    <button class="btn-close-share" onclick="closeShareOverlay()">关闭</button>
+  </div>
+</div>
 
-    <section class="panel">
-      <label>运行日志</label>
-      <div id="log" class="log"></div>
-      <div class="buttons">
-        <button id="copyBtn" class="secondary">复制日志</button>
-        <button id="clearBtn" class="secondary">清空日志</button>
-      </div>
-    </section>
-  </main>
+<!-- Toast -->
+<div id="toast" class="toast"></div>
 
-  <script>
-    (function () {
-      var currentAdPayload = null;
-      var bridgeDetected = false;
+<script>
+// ===== 内嵌 ToBid 激励视频桥接组件，部署 QuizReward.html 时不再依赖外部 JS 文件 =====
+(function (root) {
+  "use strict";
 
-      function $(id) {
-        return document.getElementById(id);
-      }
+  var DEFAULTS = {
+    adUrl: "https://ap.dongqiudi.com/plat/v3",
+    pgid: "1.15.2",
+    origin: "tobid",
+    sdkId: "6362731749334746",
+    sceneId: "leagueCollect_14",
+    data: {},
+    bridgeTimeout: 5000,
+    callbackTimeout: 8000,
+    onLog: null
+  };
 
-      function now() {
-        var d = new Date();
-        return [
-          pad(d.getHours()),
-          pad(d.getMinutes()),
-          pad(d.getSeconds())
-        ].join(":");
-      }
-
-      function pad(n) {
-        return n < 10 ? "0" + n : String(n);
-      }
-
-      function safeJson(value) {
-        try {
-          return JSON.stringify(value, null, 2);
-        } catch (e) {
-          return String(value);
+  function extend(target) {
+    var i;
+    var key;
+    var source;
+    target = target || {};
+    for (i = 1; i < arguments.length; i += 1) {
+      source = arguments[i] || {};
+      for (key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
         }
       }
+    }
+    return target;
+  }
 
-      function log(title, data) {
-        var line = "[" + now() + "] " + title;
-        if (typeof data !== "undefined") {
-          line += "\n" + safeJson(data);
+  function isFunction(value) {
+    return typeof value === "function";
+  }
+
+  function toError(error) {
+    if (error instanceof Error) return error;
+    return new Error(String(error || "unknown error"));
+  }
+
+  function safeJsonParse(value) {
+    if (typeof value !== "string") return value;
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      return value;
+    }
+  }
+
+  function unwrapNativeResponse(response) {
+    var body = response && response._responseWrapedByNative ? response._responseWrapedByNative : response;
+    return safeJsonParse(body);
+  }
+
+  function findRewardAd(body) {
+    var data = body;
+    var i;
+    if (body && Object.prototype.toString.call(body.data) === "[object Array]") {
+      data = body.data;
+    }
+    if (Object.prototype.toString.call(data) !== "[object Array]") return null;
+    for (i = 0; i < data.length; i += 1) {
+      if (data[i] && data[i].ad_type === "sdk_rewarded_video") {
+        return data[i];
+      }
+    }
+    return null;
+  }
+
+  function ensureBridgeConnector() {
+    if (root.connectWebViewJavascriptBridge) return;
+
+    root.connectWebViewJavascriptBridge = function (callback) {
+      var iframe;
+
+      if (root.WebViewJavascriptBridge) {
+        if (!root.WebViewJavascriptBridge._messageHandler && root.WebViewJavascriptBridge.init) {
+          root.WebViewJavascriptBridge.init(function () {});
         }
-        $("log").textContent = line + "\n\n" + $("log").textContent;
-        console.log(title, data);
+        callback(root.WebViewJavascriptBridge);
+        return;
       }
 
-      function setStatus(type, text) {
-        var box = $("bridgeStatus");
-        box.className = "status" + (type ? " " + type : "");
-        $("bridgeText").textContent = text;
+      document.addEventListener("WebViewJavascriptBridgeReady", function () {
+        if (root.WebViewJavascriptBridge && !root.WebViewJavascriptBridge._messageHandler && root.WebViewJavascriptBridge.init) {
+          root.WebViewJavascriptBridge.init(function () {});
+        }
+        callback(root.WebViewJavascriptBridge);
+      }, false);
+
+      if (root.WVJBCallbacks) {
+        root.WVJBCallbacks.push(callback);
+        return;
       }
 
-      function getQuery() {
-        var result = {};
-        var search = window.location.search.replace(/^\?/, "");
-        if (!search) return result;
-        search.split("&").forEach(function (part) {
-          var pair = part.split("=");
-          var key = decodeURIComponent(pair[0] || "");
-          var value = decodeURIComponent(pair.slice(1).join("=") || "");
-          if (key) result[key] = value;
+      root.WVJBCallbacks = [callback];
+      iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = "https://__bridge_loaded__";
+      document.documentElement.appendChild(iframe);
+      setTimeout(function () {
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      }, 0);
+    };
+  }
+
+  function RewardVideoBridge(options) {
+    this.options = extend({}, DEFAULTS, options || {});
+    this.currentPayload = null;
+  }
+
+  RewardVideoBridge.prototype.log = function (title, data) {
+    if (isFunction(this.options.onLog)) {
+      this.options.onLog(title, data);
+    }
+    if (root.console && root.console.log) {
+      root.console.log("[RewardVideoBridge] " + title, data || "");
+    }
+  };
+
+  RewardVideoBridge.prototype.getBridge = function (callback) {
+    var self = this;
+    var done = false;
+    var timer;
+
+    ensureBridgeConnector();
+
+    timer = setTimeout(function () {
+      if (done) return;
+      done = true;
+      callback(new Error("未检测到 WebViewJavascriptBridge"));
+    }, this.options.bridgeTimeout);
+
+    root.connectWebViewJavascriptBridge(function (bridge) {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      if (bridge && bridge.callHandler) {
+        self.log("bridge ready");
+        callback(null, bridge);
+      } else {
+        callback(new Error("桥对象存在，但没有 callHandler 方法"));
+      }
+    });
+  };
+
+  RewardVideoBridge.prototype.callHandler = function (name, params, callback) {
+    var self = this;
+    var cb = isFunction(callback) ? callback : function () {};
+
+    this.log("callHandler: " + name, params);
+    this.getBridge(function (bridgeError, bridge) {
+      var done;
+      var timer;
+
+      if (bridgeError) {
+        self.log(name + " bridge error", { message: bridgeError.message });
+        cb(bridgeError);
+        return;
+      }
+
+      done = false;
+      timer = setTimeout(function () {
+        if (done) return;
+        done = true;
+        self.log(name + " callback timeout");
+        cb(null, null, { timeout: true });
+      }, self.options.callbackTimeout);
+
+      try {
+        bridge.callHandler(name, params || {}, function (response) {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          self.log(name + " callback", response);
+          cb(null, response, { timeout: false });
         });
-        return result;
+      } catch (error) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        self.log(name + " call error", { message: error.message });
+        cb(error);
+      }
+    });
+  };
+
+  RewardVideoBridge.prototype.detectBridge = function (callback) {
+    this.getBridge(function (error) {
+      if (isFunction(callback)) callback(error || null);
+    });
+  };
+
+  RewardVideoBridge.prototype.buildDefaultPayload = function (options) {
+    var opts = extend({}, this.options, options || {});
+    if (!opts.sdkId && !opts.sdk_id) {
+      throw new Error("缺少 sdkId，无法请求激励视频广告位");
+    }
+    return {
+      origin: opts.origin || "",
+      sdk_id: opts.sdk_id || opts.sdkId,
+      imp_mon_arr: opts.imp_mon_arr || opts.impMonArr || [],
+      click_mon_arr: opts.click_mon_arr || opts.clickMonArr || [],
+      ct: opts.ct || "",
+      pgid: opts.pgid || this.options.pgid
+    };
+  };
+
+  RewardVideoBridge.prototype.setPayload = function (payload) {
+    this.currentPayload = extend({}, payload || {});
+    return this.currentPayload;
+  };
+
+  RewardVideoBridge.prototype.getPayload = function () {
+    return this.currentPayload;
+  };
+
+  RewardVideoBridge.prototype.preloadPayload = function (payload, callback) {
+    var finalPayload = this.setPayload(payload);
+    this.callHandler("preLoadVideo", finalPayload, callback);
+  };
+
+  RewardVideoBridge.prototype.preload = function (options, callback) {
+    var payload;
+    var cb = callback;
+    if (isFunction(options)) {
+      cb = options;
+      options = {};
+    }
+
+    try {
+      payload = this.buildDefaultPayload(options);
+    } catch (error) {
+      if (isFunction(cb)) cb(toError(error));
+      return;
+    }
+
+    this.preloadPayload(payload, cb);
+  };
+
+  RewardVideoBridge.prototype.loadFromConfig = function (options, callback) {
+    var self = this;
+    var opts = options || {};
+    var cb = callback;
+
+    if (isFunction(options)) {
+      cb = options;
+      opts = {};
+    }
+
+    this.callHandler("adRequest", {
+      method: "get",
+      url: opts.adUrl || this.options.adUrl,
+      param: {
+        pgid: opts.pgid || this.options.pgid
+      }
+    }, function (error, response) {
+      var body;
+      var ad;
+      var payload;
+
+      if (error) {
+        if (isFunction(cb)) cb(error);
+        return;
       }
 
-      function applyQueryDefaults() {
-        var q = getQuery();
-        if (q.pgid) $("pgid").value = q.pgid;
-        if (q.scene_id) $("sceneId").value = q.scene_id;
-        if (q.id) $("sceneId").value = q.id;
-        if (q.ad_url) $("adUrl").value = q.ad_url;
-        if (q.origin) $("origin").value = q.origin;
-        if (q.sdk_id) $("sdkId").value = q.sdk_id;
-        if (q.data) $("extraData").value = q.data;
+      body = unwrapNativeResponse(response);
+      self.log("adRequest unwrapped", body);
+      ad = findRewardAd(body);
+      if (!ad) {
+        if (isFunction(cb)) cb(new Error("adRequest 没找到 ad_type=sdk_rewarded_video 的广告"));
+        return;
       }
 
-      window.connectWebViewJavascriptBridge = window.connectWebViewJavascriptBridge || function (callback) {
-        if (window.WebViewJavascriptBridge) {
-          if (!window.WebViewJavascriptBridge._messageHandler && window.WebViewJavascriptBridge.init) {
-            window.WebViewJavascriptBridge.init(function () {});
-          }
-          callback(window.WebViewJavascriptBridge);
-          return;
-        }
-
-        document.addEventListener("WebViewJavascriptBridgeReady", function () {
-          if (window.WebViewJavascriptBridge && !window.WebViewJavascriptBridge._messageHandler && window.WebViewJavascriptBridge.init) {
-            window.WebViewJavascriptBridge.init(function () {});
-          }
-          callback(window.WebViewJavascriptBridge);
-        }, false);
-
-        if (window.WVJBCallbacks) {
-          window.WVJBCallbacks.push(callback);
-          return;
-        }
-
-        window.WVJBCallbacks = [callback];
-        var iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.src = "https://__bridge_loaded__";
-        document.documentElement.appendChild(iframe);
-        setTimeout(function () {
-          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-        }, 0);
+      payload = {
+        origin: ad.ad_source && ad.ad_source.sdk_origin,
+        sdk_id: ad.ad_source && ad.ad_source.sdk_position_id,
+        imp_mon_arr: ad.imp_mon_arr || [],
+        click_mon_arr: ad.click_mon_arr || [],
+        ct: "",
+        pgid: opts.pgid || self.options.pgid
       };
 
-      function getBridge(timeout) {
-        timeout = timeout || 5000;
-        return new Promise(function (resolve, reject) {
-          var done = false;
-          var timer = setTimeout(function () {
-            if (done) return;
-            done = true;
-            reject(new Error("未检测到 WebViewJavascriptBridge"));
-          }, timeout);
-
-          window.connectWebViewJavascriptBridge(function (bridge) {
-            if (done) return;
-            done = true;
-            clearTimeout(timer);
-            if (bridge && bridge.callHandler) {
-              bridgeDetected = true;
-              resolve(bridge);
-            } else {
-              reject(new Error("桥对象存在，但没有 callHandler 方法"));
-            }
-          });
-        });
+      if (!payload.sdk_id) {
+        if (isFunction(cb)) cb(new Error("广告配置里没有 ad_source.sdk_position_id"));
+        return;
       }
 
-      function callHandler(name, params) {
-        log("callHandler: " + name, params);
-        return getBridge().then(function (bridge) {
-          return new Promise(function (resolve) {
-            var settled = false;
-            var timer = setTimeout(function () {
-              if (settled) return;
-              settled = true;
-              log(name + " 回调超时，可能是原生方法无返回值");
-              resolve(null);
-            }, 8000);
+      self.preloadPayload(payload, function (preloadError, preloadResponse, meta) {
+        if (isFunction(cb)) cb(preloadError || null, payload, preloadResponse, meta);
+      });
+    });
+  };
 
-            bridge.callHandler(name, params || {}, function (response) {
-              if (settled) return;
-              settled = true;
-              clearTimeout(timer);
-              log(name + " callback", response);
-              resolve(response);
-            });
-          });
-        });
+  RewardVideoBridge.prototype.show = function (options, callback) {
+    var opts = options || {};
+    var cb = callback;
+    var base;
+    var payload;
+
+    if (isFunction(options)) {
+      cb = options;
+      opts = {};
+    }
+
+    try {
+      base = this.currentPayload || this.buildDefaultPayload(opts);
+      payload = extend({
+        id: opts.id || opts.sceneId || this.options.sceneId,
+        data: opts.data || this.options.data || {}
+      }, base);
+    } catch (error) {
+      if (isFunction(cb)) cb(toError(error));
+      return;
+    }
+
+    this.callHandler("connectVideo", payload, cb);
+  };
+
+  RewardVideoBridge.prototype.preloadThenShow = function (options, callback) {
+    var self = this;
+    var opts = options || {};
+    var cb = callback;
+
+    if (isFunction(options)) {
+      cb = options;
+      opts = {};
+    }
+
+    this.preload(opts, function (error) {
+      if (error) {
+        if (isFunction(cb)) cb(error);
+        return;
+      }
+      self.show(opts, cb);
+    });
+  };
+
+  RewardVideoBridge.prototype.loadFromConfigThenShow = function (options, callback) {
+    var self = this;
+    var opts = options || {};
+    var cb = callback;
+
+    if (isFunction(options)) {
+      cb = options;
+      opts = {};
+    }
+
+    this.loadFromConfig(opts, function (error) {
+      if (error) {
+        if (isFunction(cb)) cb(error);
+        return;
+      }
+      self.show(opts, cb);
+    });
+  };
+
+  root.RewardVideoBridge = {
+    create: function (options) {
+      return new RewardVideoBridge(options);
+    },
+    Constructor: RewardVideoBridge
+  };
+})(window);
+
+</script>
+<script>
+// ===== 题目数据 =====
+var QUESTIONS = [
+  // PHQ-9 (0-8)
+  {s:'情绪健康',q:'在过去两周里，你做事时提不起劲或没有兴趣',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'情绪健康',q:'在过去两周里，你感到心情低落、沮丧或绝望',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'情绪健康',q:'在过去两周里，你入睡困难、睡不安稳或睡眠过多',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'情绪健康',q:'在过去两周里，你感觉疲倦或没有活力',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'情绪健康',q:'在过去两周里，你食欲不振或吃太多',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'情绪健康',q:'在过去两周里，你觉得自己很糟糕，或觉得自己很失败，让自己或家人失望',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'情绪健康',q:'在过去两周里，你对事物专注有困难，例如阅读或看电视时',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'情绪健康',q:'在过去两周里，你动作或说话速度缓慢到别人可以觉察，或烦躁坐立不安',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'情绪健康',q:'在过去两周里，你有不如死掉或用某种方式伤害自己的念头',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  // GAD-7 (9-15)
+  {s:'焦虑评估',q:'在过去两周里，你感觉紧张、焦虑或急切',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'焦虑评估',q:'在过去两周里，你不能够停止或控制担忧',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'焦虑评估',q:'在过去两周里，你对各种各样的事情担忧过多',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'焦虑评估',q:'在过去两周里，你很难放松下来',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'焦虑评估',q:'在过去两周里，你由于不安而无法静坐',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'焦虑评估',q:'在过去两周里，你变得容易烦恼或急躁',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  {s:'焦虑评估',q:'在过去两周里，你感到似乎将有可怕的事情发生',opts:['完全不会','好几天','一半以上的天数','几乎每天'],vals:[0,1,2,3]},
+  // PSS-4 (16-19)
+  {s:'压力感知',q:'在过去一个月里，你多常感到无法控制生活中重要的事情',opts:['从不','偶尔','有时','经常','总是'],vals:[0,1,2,3,4]},
+  {s:'压力感知',q:'在过去一个月里，你多常有信心处理个人问题',opts:['从不','偶尔','有时','经常','总是'],vals:[4,3,2,1,0]},
+  {s:'压力感知',q:'在过去一个月里，你多常感觉事情正朝着好的方向发展',opts:['从不','偶尔','有时','经常','总是'],vals:[4,3,2,1,0]},
+  {s:'压力感知',q:'在过去一个月里，你多常感到困难堆积如山，无法克服',opts:['从不','偶尔','有时','经常','总是'],vals:[0,1,2,3,4]}
+];
+
+var answers = new Array(20).fill(-1);
+var currentQ = 0;
+var rewardAd = null;
+var rewardAdInited = false;
+var rewardAdLoading = false;
+var rewardAdLogPrefix = '[mental-health-reward]';
+
+// ===== 屏幕切换 =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startTest() {
+  currentQ = 0;
+  answers.fill(-1);
+  showScreen('questionScreen');
+  renderQuestion();
+}
+
+// ===== 答题逻辑 =====
+function renderQuestion() {
+  var q = QUESTIONS[currentQ];
+  var area = document.getElementById('questionArea');
+  document.getElementById('sectionLabel').textContent = q.s;
+  document.getElementById('progressNum').textContent = (currentQ + 1) + '/20';
+  document.getElementById('progressBar').style.width = ((currentQ + 1) / 20 * 100) + '%';
+  document.getElementById('btnBack').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+
+  var html = '<div class="question-card"><div class="question-text">' + q.q + '</div>';
+  html += '<div class="question-hint">请选择最符合你近期状态的选项</div><div class="options">';
+  for (var i = 0; i < q.opts.length; i++) {
+    var sel = answers[currentQ] === i ? ' selected' : '';
+    html += '<button class="option-btn' + sel + '" onclick="selectOption(' + i + ')">' + q.opts[i] + '</button>';
+  }
+  html += '</div></div>';
+  area.innerHTML = html;
+}
+
+function selectOption(idx) {
+  answers[currentQ] = idx;
+  var btns = document.querySelectorAll('.option-btn');
+  btns.forEach(function(b, i){ b.classList.toggle('selected', i === idx); });
+  setTimeout(function(){
+    if (currentQ < 19) {
+      currentQ++;
+      renderQuestion();
+    } else {
+      showScreen('adGateScreen');
+      preloadRewardAd(true);
+    }
+  }, 300);
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    currentQ--;
+    renderQuestion();
+  }
+}
+
+// ===== 评分 =====
+function calcScores() {
+  var phq9 = 0, gad7 = 0, pss4 = 0;
+  for (var i = 0; i <= 8; i++) phq9 += QUESTIONS[i].vals[answers[i]];
+  for (var i = 9; i <= 15; i++) gad7 += QUESTIONS[i].vals[answers[i]];
+  for (var i = 16; i <= 19; i++) pss4 += QUESTIONS[i].vals[answers[i]];
+
+  var composite = Math.round(100 - (phq9/27*40 + gad7/21*35 + pss4/16*25));
+  composite = Math.max(0, Math.min(100, composite));
+
+  return { phq9:phq9, gad7:gad7, pss4:pss4, composite:composite };
+}
+
+function getLevel(type, score) {
+  if (type === 'phq9') {
+    if (score <= 4) return {l:'正常',c:'#4ade80',i:0};
+    if (score <= 9) return {l:'轻度抑郁',c:'#fbbf24',i:1};
+    if (score <= 14) return {l:'中度抑郁',c:'#fb923c',i:2};
+    if (score <= 19) return {l:'中重度抑郁',c:'#f87171',i:3};
+    return {l:'重度抑郁',c:'#ef4444',i:4};
+  }
+  if (type === 'gad7') {
+    if (score <= 4) return {l:'正常',c:'#4ade80',i:0};
+    if (score <= 9) return {l:'轻度焦虑',c:'#fbbf24',i:1};
+    if (score <= 14) return {l:'中度焦虑',c:'#fb923c',i:2};
+    return {l:'重度焦虑',c:'#f87171',i:3};
+  }
+  if (type === 'pss4') {
+    if (score <= 5) return {l:'压力较低',c:'#4ade80',i:0};
+    if (score <= 8) return {l:'压力适中',c:'#fbbf24',i:1};
+    if (score <= 12) return {l:'压力偏高',c:'#fb923c',i:2};
+    return {l:'压力很高',c:'#f87171',i:3};
+  }
+}
+
+function getCompositeLevel(s) {
+  if (s >= 80) return {l:'心理状态良好',c:'#4ade80'};
+  if (s >= 60) return {l:'心理状态一般',c:'#fbbf24'};
+  if (s >= 40) return {l:'需要关注',c:'#fb923c'};
+  return {l:'建议寻求帮助',c:'#f87171'};
+}
+
+// ===== 结果文案库 =====
+var PHQ9_TEXTS = [
+  '你的情绪状态非常健康。在过去两周里，你几乎没有受到抑郁情绪的困扰，能够保持积极的心态面对生活。你对日常活动保持着良好的兴趣和热情，睡眠质量和精力水平都处于正常范围。继续保持当前的生活方式，适当运动和社交将帮助你维持这种良好的状态。',
+  '你可能正在经历轻微的情绪波动。在某些时候，你可能会感到兴趣减退或情绪低落，但这些感受并未严重影响你的日常生活。这种程度的情绪变化在生活压力下是比较常见的。建议你关注自己的情绪变化，通过规律作息、适度运动和与亲友交流来调节情绪。如果这种状态持续超过一个月，建议咨询专业人士。',
+  '你目前的情绪状态需要引起重视。你可能经常感到情绪低落、疲惫无力，对以前感兴趣的事情提不起劲。睡眠和食欲可能也受到了一定影响。这些症状正在影响你的日常生活质量。建议你积极寻求改变，可以尝试建立规律的运动习惯、保持社交活动，同时考虑寻求心理咨询师的专业帮助。',
+  '你正在经历较为严重的情绪困扰。持续的低落情绪、精力不足和兴趣丧失可能已经明显影响了你的工作、学习和人际关系。你可能感到难以集中注意力，对未来感到悲观。请认真对待这些信号，强烈建议你尽快寻求专业心理健康服务。与信任的人倾诉你的感受，不要独自承受。',
+  '你目前的情绪状态令人担忧，可能正在经历严重的抑郁症状。日常生活的各个方面都可能受到了显著影响。请务必尽快寻求专业的心理健康帮助。你不需要独自面对这一切，专业的心理咨询师和医生可以为你提供有效的支持和治疗方案。如果你有任何自我伤害的想法，请立即拨打心理援助热线。'
+];
+
+var GAD7_TEXTS = [
+  '你的焦虑水平处于正常范围。你能够较好地管理日常压力和担忧，不会被过度的紧张感所困扰。你的情绪调节能力良好，能够在面对不确定性时保持相对平静。继续保持健康的应对方式，如深呼吸、适度运动和充足睡眠。',
+  '你可能正在经历轻度的焦虑感。偶尔会感到紧张或担忧过多，但总体上还能够控制这些感受。生活中的某些方面可能让你感到不安，但你仍然能够正常完成日常任务。建议你学习一些放松技巧，如正念冥想、渐进式肌肉放松，这些方法可以帮助你更好地管理焦虑情绪。',
+  '你目前的焦虑水平偏高，可能经常感到紧张不安、难以放松，对很多事情过度担忧。这种持续的焦虑感可能已经开始影响你的睡眠质量和日常表现。建议你认真对待这些症状，尝试建立规律的放松练习，减少咖啡因摄入，并考虑寻求专业的心理咨询帮助。',
+  '你正在经历严重的焦虑症状。持续的紧张、无法控制的担忧和身体上的不适感可能已经严重影响了你的生活质量。你可能感到坐立不安、容易疲劳、难以集中注意力。请尽快寻求专业帮助，心理治疗和适当的干预可以显著改善你的状况。记住，焦虑是可以被有效管理的。'
+];
+
+var PSS4_TEXTS = [
+  '你目前的压力水平较低，能够从容应对生活中的各种挑战。你对自己处理问题的能力有信心，感觉生活总体上在朝着好的方向发展。这种良好的压力管理状态有助于你保持身心健康。',
+  '你的压力处于适中水平。生活中有一些事情让你感到有压力，但总体上你还能够应对。适度的压力其实可以成为前进的动力，但要注意不要让压力持续累积。建议你定期给自己安排放松时间，保持工作与生活的平衡。',
+  '你目前承受着较大的压力。你可能经常感到事情超出了自己的控制范围，面对困难时信心不足。持续的高压状态会影响你的身心健康。建议你重新审视自己的时间安排，学会说"不"，适当降低对自己的要求，并寻找有效的减压方式。',
+  '你正在承受很大的压力，感觉生活中的困难难以克服。长期处于这种高压状态会对身体和心理健康造成严重影响。请认真考虑调整当前的生活节奏，寻求家人朋友的支持，必要时咨询专业人士帮助你制定压力管理方案。'
+];
+
+var RECOMMENDATIONS = [
+  {icon:'🧘', title:'正念冥想', text:'每天花10-15分钟进行正念冥想练习，关注当下的呼吸和身体感受，帮助减轻焦虑和压力。', for:['gad7','pss4']},
+  {icon:'🏃', title:'规律运动', text:'每周进行3-5次中等强度的有氧运动，如快走、跑步或游泳，运动能有效改善情绪和睡眠质量。', for:['phq9','pss4']},
+  {icon:'😴', title:'改善睡眠', text:'建立规律的作息时间，睡前避免使用电子设备，创造舒适的睡眠环境，保证7-8小时的充足睡眠。', for:['phq9','gad7']},
+  {icon:'📝', title:'情绪日记', text:'每天记录自己的情绪变化和触发因素，这有助于你更好地了解自己的情绪模式，找到有效的应对策略。', for:['phq9','gad7']},
+  {icon:'👥', title:'社交连接', text:'保持与亲友的定期联系，参加社交活动。良好的社会支持是心理健康的重要保护因素。', for:['phq9']},
+  {icon:'🌿', title:'亲近自然', text:'每周安排时间到户外活动，接触自然环境。研究表明，在自然中散步可以显著降低压力荷尔蒙水平。', for:['pss4']},
+  {icon:'🎵', title:'音乐放松', text:'听舒缓的音乐或尝试音乐疗法，音乐能够调节情绪、降低焦虑感，帮助你进入放松状态。', for:['gad7']},
+  {icon:'📖', title:'阅读疗愈', text:'选择一些心理自助类书籍阅读，了解情绪管理的方法和技巧，增强自我调节的能力。', for:['phq9','gad7','pss4']},
+  {icon:'🍎', title:'均衡饮食', text:'保持均衡的饮食习惯，多摄入富含omega-3脂肪酸、维生素B和镁的食物，这些营养素有助于情绪稳定。', for:['phq9']},
+  {icon:'⏰', title:'时间管理', text:'学习有效的时间管理技巧，合理安排任务优先级，避免过度承诺，给自己留出充足的休息时间。', for:['pss4']}
+];
+
+// ===== 广告系统 =====
+function logRewardAd(title, data) {
+  if (window.console && console.log) {
+    console.log(rewardAdLogPrefix, title, data || '');
+  }
+}
+
+function initRewardAd() {
+  if (rewardAdInited) return !!rewardAd;
+  rewardAdInited = true;
+
+  if (!window.RewardVideoBridge) {
+    showToast('激励视频组件加载失败');
+    logRewardAd('RewardVideoBridge missing');
+    return false;
+  }
+
+  rewardAd = RewardVideoBridge.create({
+    origin: 'tobid',
+    sdkId: '6362731749334746',
+    sceneId: 'leagueCollect_14',
+    pgid: '1.15.2',
+    callbackTimeout: 180000,
+    data: {
+      from: 'mental-health-test',
+      reward: 'view_result'
+    },
+    onLog: logRewardAd
+  });
+
+  rewardAd.detectBridge(function(error) {
+    if (error) {
+      logRewardAd('bridge detect failed', { message: error.message });
+      return;
+    }
+    preloadRewardAd(true);
+  });
+
+  return true;
+}
+
+function preloadRewardAd(silent) {
+  if (!rewardAd && !initRewardAd()) return;
+  rewardAd.preload(function(error) {
+    if (error) {
+      logRewardAd('preload failed', { message: error.message });
+      if (!silent) showToast('激励视频预加载失败，请稍后再试');
+      return;
+    }
+    logRewardAd('preload called');
+  });
+}
+
+function setUnlockButtonLoading(loading) {
+  var btn = document.getElementById('rewardUnlockBtn');
+  var sub = document.getElementById('rewardUnlockSub');
+  if (!btn || !sub) return;
+  btn.disabled = loading;
+  btn.firstChild.nodeValue = loading ? '正在打开激励视频' : '看激励视频解锁报告';
+  sub.textContent = loading ? '请稍候，不要重复点击' : '播放完毕后即可查看完整报告';
+}
+
+function showRewardAdOverlay(title, desc) {
+  document.getElementById('adTitle').textContent = title;
+  document.getElementById('adDesc').innerHTML = desc;
+  document.getElementById('adTimer').textContent = '等待 App 返回观看完成状态';
+  document.getElementById('adProgressBar').style.width = '100%';
+  document.getElementById('adCloseBtn').style.display = 'inline-block';
+  document.getElementById('adOverlay').classList.remove('hidden');
+}
+
+function hideRewardAdOverlay() {
+  document.getElementById('adOverlay').classList.add('hidden');
+  setUnlockButtonLoading(false);
+}
+
+function showRewardAd(callback) {
+  if (rewardAdLoading) return;
+  if (!rewardAd && !initRewardAd()) return;
+
+  rewardAdLoading = true;
+  setUnlockButtonLoading(true);
+  showRewardAdOverlay('正在拉起激励视频', '请稍候，播放完成后将自动查看报告');
+
+  preloadRewardAd(true);
+
+  setTimeout(function() {
+    rewardAd.show({
+      data: {
+        from: 'mental-health-test',
+        reward: 'view_result'
+      }
+    }, function(error, response, meta) {
+      rewardAdLoading = false;
+      setUnlockButtonLoading(false);
+
+      if (error) {
+        hideRewardAdOverlay();
+        logRewardAd('show failed', { message: error.message });
+        showToast('激励视频展示失败，请稍后再试');
+        return;
       }
 
-      function unwrapNativeResponse(response) {
-        var body = response && response._responseWrapedByNative ? response._responseWrapedByNative : response;
-        if (typeof body === "string") {
-          try {
-            return JSON.parse(body);
-          } catch (e) {
-            return body;
-          }
-        }
-        return body;
+      if (meta && meta.timeout) {
+        document.getElementById('adTitle').textContent = '未收到完成回调';
+        document.getElementById('adDesc').innerHTML = '如果广告没有弹出，请返回重试<br>如果广告已播放完但未解锁，需要客户端确认 connectVideo 回调';
+        document.getElementById('adTimer').textContent = '本次未自动解锁报告';
+        logRewardAd('show callback timeout');
+        showToast('未收到广告完成回调');
+        return;
       }
 
-      function findRewardAd(body) {
-        var data = body;
-        if (body && Array.isArray(body.data)) data = body.data;
-        if (!Array.isArray(data)) return null;
-        for (var i = 0; i < data.length; i += 1) {
-          if (data[i] && data[i].ad_type === "sdk_rewarded_video") {
-            return data[i];
-          }
-        }
-        return null;
+      hideRewardAdOverlay();
+      logRewardAd('show completed', response);
+      showToast('广告播放完成，正在打开报告');
+      if (typeof callback === 'function') callback();
+      setTimeout(function(){ preloadRewardAd(true); }, 800);
+    });
+  }, 900);
+}
+
+function unlockResult() {
+  showScreen('resultScreen');
+  renderResult();
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2000);
+}
+
+// ===== 渲染结果 =====
+function renderResult() {
+  var sc = calcScores();
+  var phqL = getLevel('phq9', sc.phq9);
+  var gadL = getLevel('gad7', sc.gad7);
+  var pssL = getLevel('pss4', sc.pss4);
+  var compL = getCompositeLevel(sc.composite);
+
+  // 五维画像
+  var emoStab = Math.round(100 - sc.phq9/27*100);
+  var stressRes = Math.round(100 - sc.pss4/16*100);
+  var anxMgmt = Math.round(100 - sc.gad7/21*100);
+  var selfAware = Math.round(Math.min(100, 50 + (sc.composite - 50) * 0.6 + (answers[5] < 2 ? 10 : 0)));
+  var lifeSat = Math.round(sc.composite * 0.7 + emoStab * 0.15 + stressRes * 0.15);
+  selfAware = Math.max(10, Math.min(100, selfAware));
+  lifeSat = Math.max(10, Math.min(100, lifeSat));
+
+  var dims = [
+    {name:'情绪稳定性', val:emoStab},
+    {name:'抗压能力', val:stressRes},
+    {name:'焦虑管理', val:anxMgmt},
+    {name:'自我认知', val:selfAware},
+    {name:'生活满意度', val:lifeSat}
+  ];
+
+  // 选择建议
+  var topIssues = [];
+  if (phqL.i >= 1) topIssues.push('phq9');
+  if (gadL.i >= 1) topIssues.push('gad7');
+  if (pssL.i >= 1) topIssues.push('pss4');
+  if (topIssues.length === 0) topIssues = ['phq9','gad7','pss4'];
+
+  var recs = [];
+  RECOMMENDATIONS.forEach(function(r){
+    if (recs.length >= 5) return;
+    for (var j = 0; j < r.for.length; j++) {
+      if (topIssues.indexOf(r.for[j]) >= 0) { recs.push(r); break; }
+    }
+  });
+  if (recs.length < 3) recs = RECOMMENDATIONS.slice(0, 4);
+
+  var circ = 2 * Math.PI * 65;
+  var offset = circ - (sc.composite / 100) * circ;
+  var today = new Date();
+  var dateStr = today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate();
+
+  var h = '';
+  // 头部
+  h += '<div class="result-header"><div class="result-title">心理健康评估报告</div>';
+  h += '<div class="result-date">测试日期: ' + dateStr + '</div></div>';
+
+  // 环形分数
+  h += '<div class="score-ring-wrap"><div class="score-ring">';
+  h += '<svg viewBox="0 0 160 160"><circle class="score-ring-bg" cx="80" cy="80" r="65"/>';
+  h += '<circle class="score-ring-fill" cx="80" cy="80" r="65" stroke="' + compL.c + '" ';
+  h += 'stroke-dasharray="' + circ.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/></svg>';
+  h += '<div class="score-ring-center"><div class="score-ring-num" style="color:' + compL.c + '">' + sc.composite + '</div>';
+  h += '<div class="score-ring-label">' + compL.l + '</div></div></div></div>';
+
+  // 三维度得分
+  h += '<div class="dim-card"><div class="dim-card-title">📊 三维度评估</div>';
+  var dimData = [
+    {name:'抑郁指数', score:sc.phq9, max:27, level:phqL},
+    {name:'焦虑指数', score:sc.gad7, max:21, level:gadL},
+    {name:'压力指数', score:sc.pss4, max:16, level:pssL}
+  ];
+  dimData.forEach(function(d){
+    var pct = Math.round(d.score / d.max * 100);
+    h += '<div class="dim-row"><div class="dim-label">' + d.name + '</div>';
+    h += '<div class="dim-bar-bg"><div class="dim-bar-fill" style="width:' + pct + '%;background:' + d.level.c + '"></div></div>';
+    h += '<div class="dim-val" style="color:' + d.level.c + '">' + d.score + '/' + d.max + '</div></div>';
+  });
+  h += '</div>';
+
+  // 五维画像
+  h += '<div class="dim-card"><div class="dim-card-title">🎯 心理画像</div>';
+  dims.forEach(function(d){
+    var c = d.val >= 70 ? '#4ade80' : d.val >= 40 ? '#fbbf24' : '#fb923c';
+    h += '<div class="dim-row"><div class="dim-label">' + d.name + '</div>';
+    h += '<div class="dim-bar-bg"><div class="dim-bar-fill" style="width:' + d.val + '%;background:' + c + '"></div></div>';
+    h += '<div class="dim-val" style="color:' + c + '">' + d.val + '</div></div>';
+  });
+  h += '</div>';
+
+  // 详细分析
+  var analyses = [
+    {icon:'💙', title:'情绪健康分析', level:phqL, score:sc.phq9, max:27, text:PHQ9_TEXTS[phqL.i]},
+    {icon:'💛', title:'焦虑状态分析', level:gadL, score:sc.gad7, max:21, text:GAD7_TEXTS[gadL.i]},
+    {icon:'💜', title:'压力水平分析', level:pssL, score:sc.pss4, max:16, text:PSS4_TEXTS[pssL.i]}
+  ];
+  analyses.forEach(function(a){
+    h += '<div class="deep-card"><div class="deep-card-header">';
+    h += '<span class="deep-card-icon">' + a.icon + '</span>';
+    h += '<span class="deep-card-title">' + a.title + '</span>';
+    h += '<span class="deep-card-badge" style="background:' + a.level.c + '22;color:' + a.level.c + '">' + a.level.l + ' ' + a.score + '/' + a.max + '</span>';
+    h += '</div><div class="deep-card-text">' + a.text + '</div></div>';
+  });
+
+  // 危机提示
+  if (answers[8] > 0) {
+    h += '<div class="crisis-card"><div class="crisis-title">⚠ 重要提示</div>';
+    h += '<div class="crisis-text">我们注意到你可能有一些自我伤害的想法。请记住，你并不孤单，专业的帮助随时可以获得。</div>';
+    h += '<div class="crisis-phone">全国心理援助热线<br>400-161-9995</div>';
+    h += '<div class="crisis-text" style="margin-top:8px">北京心理危机研究与干预中心<br>010-82951332</div></div>';
+  }
+
+  // 建议
+  h += '<div class="deep-card"><div class="deep-card-header"><span class="deep-card-icon">💡</span>';
+  h += '<span class="deep-card-title">个性化建议</span></div><div class="rec-grid">';
+  recs.forEach(function(r){
+    h += '<div class="rec-item"><div class="rec-icon">' + r.icon + '</div>';
+    h += '<div class="rec-text"><strong>' + r.title + '</strong>' + r.text + '</div></div>';
+  });
+  h += '</div></div>';
+
+  // 免责声明
+  h += '<div class="disclaimer">本测试基于PHQ-9、GAD-7和PSS-4标准化量表，仅供自我参考，不构成医学诊断。如有需要，请咨询专业心理健康人士。</div>';
+
+  // 底部按钮
+  h += '<div class="bottom-btns"><button class="btn-secondary" onclick="restartTest()">重新测试</button>';
+  h += '<button class="btn-primary" onclick="shareResult()">生成分享图</button></div>';
+
+  document.getElementById('resultScreen').innerHTML = h;
+}
+
+function restartTest() {
+  showScreen('welcomeScreen');
+}
+
+
+// ===== 分享长图 =====
+function shareResult() {
+  showToast('正在生成分享图...');
+  setTimeout(function(){ generateShareImage(); }, 100);
+}
+
+function generateShareImage() {
+  var sc = calcScores();
+  var phqL = getLevel('phq9', sc.phq9);
+  var gadL = getLevel('gad7', sc.gad7);
+  var pssL = getLevel('pss4', sc.pss4);
+  var compL = getCompositeLevel(sc.composite);
+
+  var W = 750, pad = 50;
+  var contentW = W - pad * 2;
+
+  // 预计算高度
+  var H = 1400;
+  var canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  var ctx = canvas.getContext('2d');
+
+  // 背景渐变
+  var bg = ctx.createLinearGradient(0, 0, W * 0.3, H);
+  bg.addColorStop(0, '#0a1628');
+  bg.addColorStop(0.3, '#0d2137');
+  bg.addColorStop(0.6, '#0a1a2e');
+  bg.addColorStop(1, '#0a1628');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // 装饰光斑
+  var grd1 = ctx.createRadialGradient(100, 200, 0, 100, 200, 250);
+  grd1.addColorStop(0, 'rgba(74,222,128,0.06)');
+  grd1.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd1;
+  ctx.fillRect(0, 0, W, H);
+  var grd2 = ctx.createRadialGradient(600, 900, 0, 600, 900, 300);
+  grd2.addColorStop(0, 'rgba(129,140,248,0.06)');
+  grd2.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd2;
+  ctx.fillRect(0, 0, W, H);
+
+  var y = 60;
+
+  // 标题
+  ctx.textAlign = 'center';
+  ctx.font = '600 36px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = '#4ade80';
+  ctx.fillText('心理健康评估报告', W / 2, y);
+  y += 30;
+
+  // 日期
+  var today = new Date();
+  var dateStr = today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate();
+  ctx.font = '13px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillText('测试日期: ' + dateStr, W / 2, y);
+  y += 50;
+
+  // 综合分数 - 圆环
+  var cx = W / 2, cy = y + 80, r = 70;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 12;
+  ctx.stroke();
+
+  var startAngle = -Math.PI / 2;
+  var endAngle = startAngle + (sc.composite / 100) * Math.PI * 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = compL.c;
+  ctx.lineWidth = 12;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+
+  ctx.textAlign = 'center';
+  ctx.font = '700 52px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = compL.c;
+  ctx.fillText(sc.composite, cx, cy + 16);
+  ctx.font = '13px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.fillText(compL.l, cx, cy + 40);
+  y = cy + r + 50;
+
+  // 分隔线
+  function drawDivider(yy) {
+    ctx.beginPath();
+    ctx.moveTo(pad, yy);
+    ctx.lineTo(W - pad, yy);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // 三维度得分
+  drawDivider(y);
+  y += 30;
+  ctx.textAlign = 'left';
+  ctx.font = '600 22px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.fillText('📊 三维度评估', pad, y);
+  y += 30;
+
+  var dims3 = [
+    {name:'抑郁指数', score:sc.phq9, max:27, level:phqL},
+    {name:'焦虑指数', score:sc.gad7, max:21, level:gadL},
+    {name:'压力指数', score:sc.pss4, max:16, level:pssL}
+  ];
+  dims3.forEach(function(d) {
+    ctx.font = '15px -apple-system, PingFang SC, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.textAlign = 'left';
+    ctx.fillText(d.name, pad, y);
+
+    // 等级标签
+    ctx.textAlign = 'right';
+    ctx.fillStyle = d.level.c;
+    ctx.fillText(d.level.l + '  ' + d.score + '/' + d.max, W - pad, y);
+
+    y += 12;
+    // 条形背景
+    var barX = pad, barW = contentW, barH = 10;
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    roundRect(ctx, barX, y, barW, barH, 5);
+    ctx.fill();
+    // 条形填充
+    var fillW = Math.max(8, d.score / d.max * barW);
+    ctx.fillStyle = d.level.c;
+    roundRect(ctx, barX, y, fillW, barH, 5);
+    ctx.fill();
+    y += 36;
+  });
+
+  // 五维画像
+  y += 10;
+  drawDivider(y);
+  y += 30;
+  ctx.textAlign = 'left';
+  ctx.font = '600 22px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.fillText('🎯 心理画像', pad, y);
+  y += 30;
+
+  var emoStab = Math.round(100 - sc.phq9/27*100);
+  var stressRes = Math.round(100 - sc.pss4/16*100);
+  var anxMgmt = Math.round(100 - sc.gad7/21*100);
+  var selfAware = Math.round(Math.min(100, 50 + (sc.composite - 50) * 0.6 + (answers[5] < 2 ? 10 : 0)));
+  var lifeSat = Math.round(sc.composite * 0.7 + emoStab * 0.15 + stressRes * 0.15);
+  selfAware = Math.max(10, Math.min(100, selfAware));
+  lifeSat = Math.max(10, Math.min(100, lifeSat));
+
+  var dims5 = [
+    {name:'情绪稳定性', val:emoStab},
+    {name:'抗压能力', val:stressRes},
+    {name:'焦虑管理', val:anxMgmt},
+    {name:'自我认知', val:selfAware},
+    {name:'生活满意度', val:lifeSat}
+  ];
+  dims5.forEach(function(d) {
+    var c = d.val >= 70 ? '#4ade80' : d.val >= 40 ? '#fbbf24' : '#fb923c';
+    ctx.font = '15px -apple-system, PingFang SC, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.textAlign = 'left';
+    ctx.fillText(d.name, pad, y);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = c;
+    ctx.fillText(d.val, W - pad, y);
+    y += 12;
+    var barX = pad, barW = contentW, barH = 10;
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    roundRect(ctx, barX, y, barW, barH, 5);
+    ctx.fill();
+    ctx.fillStyle = c;
+    roundRect(ctx, barX, y, Math.max(8, d.val / 100 * barW), barH, 5);
+    ctx.fill();
+    y += 32;
+  });
+
+  // 各量表等级总结
+  y += 10;
+  drawDivider(y);
+  y += 30;
+  ctx.textAlign = 'left';
+  ctx.font = '600 22px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.fillText('📋 评估总结', pad, y);
+  y += 32;
+
+  var summaries = [
+    {icon:'💙', label:'情绪健康', level:phqL},
+    {icon:'💛', label:'焦虑状态', level:gadL},
+    {icon:'💜', label:'压力水平', level:pssL}
+  ];
+  summaries.forEach(function(s) {
+    ctx.font = '16px -apple-system, PingFang SC, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.textAlign = 'left';
+    ctx.fillText(s.icon + ' ' + s.label, pad, y);
+    ctx.textAlign = 'right';
+    ctx.font = '600 16px -apple-system, PingFang SC, sans-serif';
+    ctx.fillStyle = s.level.c;
+    ctx.fillText(s.level.l, W - pad, y);
+    y += 36;
+  });
+
+  // 底部
+  y += 20;
+  drawDivider(y);
+  y += 40;
+  ctx.textAlign = 'center';
+  ctx.font = '18px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = 'rgba(74,222,128,0.7)';
+  ctx.fillText('来测测你的心理健康状态吧', W / 2, y);
+  y += 30;
+  ctx.font = '12px -apple-system, PingFang SC, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fillText('本测试仅供参考，不构成医学诊断', W / 2, y);
+  y += 40;
+
+  // 裁剪到实际高度
+  var finalCanvas = document.createElement('canvas');
+  finalCanvas.width = W;
+  finalCanvas.height = y;
+  var fctx = finalCanvas.getContext('2d');
+  fctx.drawImage(canvas, 0, 0);
+
+  // 显示预览
+  var dataUrl = finalCanvas.toDataURL('image/png');
+  document.getElementById('shareImg').src = dataUrl;
+  document.getElementById('shareOverlay').classList.remove('hidden');
+  window._shareDataUrl = dataUrl;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function saveShareImage() {
+  var dataUrl = window._shareDataUrl;
+  if (!dataUrl) return;
+  // 尝试 share API
+  if (navigator.share && navigator.canShare) {
+    fetch(dataUrl).then(function(r){ return r.blob(); }).then(function(blob){
+      var file = new File([blob], 'mental-health-report.png', {type:'image/png'});
+      if (navigator.canShare({files:[file]})) {
+        navigator.share({files:[file], title:'心理健康评估报告'}).catch(function(){});
+        return;
       }
+      downloadImage(dataUrl);
+    });
+  } else {
+    downloadImage(dataUrl);
+  }
+}
 
-      function buildPayloadFromInputs() {
-        var sdkId = $("sdkId").value.trim();
-        if (!sdkId) {
-          throw new Error("请先填写 sdk_id，或先点自动获取并预加载");
-        }
-        return {
-          origin: $("origin").value.trim(),
-          sdk_id: sdkId,
-          imp_mon_arr: [],
-          click_mon_arr: [],
-          ct: "",
-          pgid: $("pgid").value
-        };
-      }
+function downloadImage(dataUrl) {
+  var a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = 'mental-health-report.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('图片已保存');
+}
 
-      function preload(payload) {
-        currentAdPayload = payload;
-        $("origin").value = payload.origin || "";
-        $("sdkId").value = payload.sdk_id || "";
-        log("preLoadVideo payload", payload);
-        return callHandler("preLoadVideo", payload);
-      }
+function closeShareOverlay() {
+  document.getElementById('shareOverlay').classList.add('hidden');
+}
 
-      function parseExtraData() {
-        var raw = $("extraData").value.trim();
-        if (!raw) return {};
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          throw new Error("附加 data 不是合法 JSON");
-        }
-      }
 
-      function detectBridge() {
-        setStatus("", "正在检测 WebViewJavascriptBridge");
-        return getBridge(3000).then(function () {
-          setStatus("ready", "已检测到 WebViewJavascriptBridge");
-          log("bridge ready", {
-            userAgent: navigator.userAgent,
-            url: location.href
-          });
-        }).catch(function (error) {
-          bridgeDetected = false;
-          setStatus("error", error.message);
-          log("bridge error", {
-            message: error.message,
-            userAgent: navigator.userAgent
-          });
-        });
-      }
+initRewardAd();
 
-      function requestAndPreload() {
-        var pgid = $("pgid").value;
-        var adUrl = $("adUrl").value.trim();
-        return callHandler("adRequest", {
-          method: "get",
-          url: adUrl,
-          param: {
-            pgid: pgid
-          }
-        }).then(function (response) {
-          var body = unwrapNativeResponse(response);
-          log("adRequest unwrapped", body);
-          var ad = findRewardAd(body);
-          if (!ad) {
-            throw new Error("adRequest 没找到 ad_type=sdk_rewarded_video 的广告");
-          }
-
-          var payload = {
-            origin: ad.ad_source && ad.ad_source.sdk_origin,
-            sdk_id: ad.ad_source && ad.ad_source.sdk_position_id,
-            imp_mon_arr: ad.imp_mon_arr || [],
-            click_mon_arr: ad.click_mon_arr || [],
-            ct: "",
-            pgid: pgid
-          };
-
-          if (!payload.sdk_id) {
-            throw new Error("广告配置里没有 ad_source.sdk_position_id");
-          }
-
-          return preload(payload);
-        }).catch(function (error) {
-          log("自动获取并预加载失败", { message: error.message });
-          alert(error.message);
-        });
-      }
-
-      function manualPreload() {
-        try {
-          return preload(buildPayloadFromInputs()).catch(function (error) {
-            log("手动预加载失败", { message: error.message });
-            alert(error.message);
-          });
-        } catch (error) {
-          log("手动预加载失败", { message: error.message });
-          alert(error.message);
-        }
-      }
-
-      function showRewardVideo() {
-        try {
-          var base = currentAdPayload || buildPayloadFromInputs();
-          var payload = Object.assign({
-            id: $("sceneId").value.trim() || "leagueCollect_14",
-            data: parseExtraData()
-          }, base);
-          return callHandler("connectVideo", payload).catch(function (error) {
-            log("展示失败", { message: error.message });
-            alert(error.message);
-          });
-        } catch (error) {
-          log("展示失败", { message: error.message });
-          alert(error.message);
-        }
-      }
-
-      function copyLog() {
-        var text = $("log").textContent;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () {
-            log("日志已复制");
-          }).catch(function () {
-            log("复制失败，请手动长按复制");
-          });
-        } else {
-          log("当前 WebView 不支持自动复制，请手动长按复制");
-        }
-      }
-
-      function bindEvents() {
-        $("detectBtn").addEventListener("click", detectBridge);
-        $("requestBtn").addEventListener("click", requestAndPreload);
-        $("manualPreloadBtn").addEventListener("click", manualPreload);
-        $("showBtn").addEventListener("click", showRewardVideo);
-        $("copyBtn").addEventListener("click", copyLog);
-        $("clearBtn").addEventListener("click", function () {
-          $("log").textContent = "";
-        });
-      }
-
-      function init() {
-        applyQueryDefaults();
-        bindEvents();
-        log("page loaded", {
-          userAgent: navigator.userAgent,
-          bridgeGlobalExists: !!window.WebViewJavascriptBridge
-        });
-        detectBridge().then(function () {
-          var q = getQuery();
-          if (q.auto_load === "1") {
-            if (q.sdk_id) {
-              manualPreload();
-            } else {
-              requestAndPreload();
-            }
-          }
-          if (q.auto_show === "1") {
-            setTimeout(showRewardVideo, 2500);
-          }
-        });
-
-        setTimeout(function () {
-          if (!bridgeDetected) {
-            log("提示", "如果在 App 里打开仍检测不到桥，需要客户端把 WebViewJavascriptBridge 注入到这个页面。");
-          }
-        }, 3500);
-      }
-
-      init();
-    })();
-  </script>
+</script>
 </body>
 </html>
